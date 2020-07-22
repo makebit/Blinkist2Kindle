@@ -1,6 +1,7 @@
 import logging
 import os
 import html
+import re
 
 from book_converter import BookConverter
 from model import Book
@@ -16,7 +17,7 @@ class BookToHtmlConverter(BookConverter):
     def convert(self, book: Book) -> str:
         html = "<!DOCTYPE html><html><head><title>" + book.title + "</title></head><body>"
 
-        html += self.h1(book.title) + self.h2(book.title) + self.h3(book.author) + \
+        html += self.h1(book.title) + self.h2(book.subtitle) + self.h3(book.author) + \
                self.get_chapter_text(self.get_about_the_book_title(book.language), book.about_the_book) + \
                self.get_chapter_text(self.get_who_should_read_title(book.language), book.who_should_read) + \
                self.get_chapter_text(self.get_about_the_author_title(book.language), book.about_the_author)
@@ -61,6 +62,8 @@ class BookToHtmlConverter(BookConverter):
 
     @staticmethod
     def replace_special_chars(string):
-        for r in (("’", "&rsquo;"), ("–", "&ndash;"), ("“", "&ldquo;"), ("”", "&rdquo;")):
+        for r in (("’", "&rsquo;"), ("–", "&ndash;"), ("“", "&ldquo;"), ("”", "&rdquo;"), ("‘", "&lsquo;"), ("’", "&rsquo;")):
             string = string.replace(*r)
+        # strip white-space from HTML
+        string = re.compile(r"\s*(<\/(li|p|h[0-9])>)\s*").sub("\g<1>", string)
         return string
